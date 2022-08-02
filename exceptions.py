@@ -12,22 +12,29 @@ logging.basicConfig(
     format='%(asctime)s, %(levelname)s, %(message)s, %(name)s',
 )
 
-class Exceptions(Exception):
+
+class exception_critical(Exception):
     def __init__(self, *args):
         if args:
             self.message = args[0]
+            logging.critical(self.message)
         else:
             self.message = None
+            logging.exception('Ошибка')
 
-    def __str__(self):
-        if self.message:
-            return 'Exceptions, {0} '.format(self.message)
+
+class exception_error(Exception):
+    def __init__(self, *args):
+        if args:
+            self.message = args[0]
+            logging.error(self.message)
         else:
-            return 'Exceptions, ошибка'
+            self.message = None
+            logging.exception('Ошибка')
 
 
 def check_get_api(endpoint, headers, params):
-    """ Проверка на валидность получения домашнего задания. """
+    """ Проверка на положительный запрос к API. """
     response = requests.get(endpoint, headers=headers, params=params)
 
     if response.ok:
@@ -38,6 +45,6 @@ def check_get_api(endpoint, headers, params):
         message = response.json()['message']
         code = response.json()['code']
     except Exception:
-        logging.error(f'{response.status_code}. Запрос на адрес {endpoint} завершился с ошибкой!')
+        exception_error(f'{response.status_code}. Запрос на адрес {endpoint} завершился с ошибкой!')
     else:
-        logging.critical(f'{code}: {message}.')
+        exception_critical(logging.critical(f'{code}: {message}.'))
