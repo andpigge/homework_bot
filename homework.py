@@ -2,15 +2,15 @@ import time
 import os
 import logging
 from dotenv import load_dotenv
+import requests
 
 from telegram import Bot
 
-from exceptions import check_get_api, exception_error, exception_critical
+from exceptions import exception_error, exception_critical, exception_warning, exception_key_error, exception_type_error
 
 
 load_dotenv()
 
-# Провепка на валидность токенов
 PRACTICUM_TOKEN = os.getenv('PRACTICUM_TOKEN')
 TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN')
 TELEGRAM_CHAT_ID = os.getenv('TELEGRAM_CHAT_ID')
@@ -18,7 +18,7 @@ TELEGRAM_CHAT_ID = os.getenv('TELEGRAM_CHAT_ID')
 RETRY_TIME = 600
 ENDPOINT = 'https://practicum.yandex.ru/api/user_api/homework_statuses/'
 HEADERS = {'Authorization': f'OAuth {PRACTICUM_TOKEN}'}
-
+BOT = Bot(token=TELEGRAM_TOKEN)
 
 HOMEWORK_STATUSES = {
     'approved': 'Работа проверена: ревьюеру всё понравилось. Ура!',
@@ -31,10 +31,12 @@ logging.basicConfig(
     filename='homework.log',
     filemode='w',
     format='%(asctime)s, %(levelname)s, %(message)s, %(name)s',
+    encoding='utf=8'
 )
 
 
 def send_message(bot, message):
+    """ Отправка в телеграмм бот сообщения. """
     try:
         bot.send_message(TELEGRAM_CHAT_ID, message)
 
@@ -43,12 +45,30 @@ def send_message(bot, message):
         logging.info(f'Сообщение успешно отправленно на телеграмм бот: {name_bot}!')
     except Exception as error:
         if error == 'Unauthorized':
-            logging.critical(f'{error}. Некорректный токен или токен отсуствует!!')
+            logging.critical(f'{error}. Некорректный токен или токен отсуствует!')
         else:
             logging.error(f'{error}. Не удалось отправить сообщение в телеграмм бот!')
 
 
+def check_get_api(endpoint, headers, params):
+    """ Проверка на положительный и отрицательные запросы к API. """
+    response = requests.get(endpoint, headers=headers, params=params)
+
+    if response.status_code < 400:
+        logging.info(f'Запрос на адрес {endpoint} прошел успешно!')
+        return response
+
+    try:
+        message = response.json()['message']
+        code = response.json()['code']
+    except Exception:
+        exception_error(f'{response.status_code}. Запрос на адрес {endpoint} завершился с ошибкой!')
+    else:
+        exception_critical(logging.critical(f'{code}: {message}.'))
+
+
 def get_api_answer(current_timestamp):
+    """ Проверка что запрос прошел успешно. """
     timestamp = current_timestamp or int(time.time())
     params = {'from_date': timestamp}
 
@@ -57,77 +77,98 @@ def get_api_answer(current_timestamp):
 
 
 def check_response(response):
-    """ Проверка ожидаемого ответа. """
+    """ Проверка что запрос соотвествует ожидаемому и у него есть ключ homeworks. """
+    if not isinstance(response, dict):
+        raise exception_type_error('Ожидается в присланном ответе коллекцию!')
+
+    if 'homeworks' not in response:
+        raise exception_key_error('Некорректный запрашеваемый элемент по ключу homeworks!')
+
     homeworks = response.get('homeworks')
 
-    if not 'homeworks' in response.keys():
-        raise exception_error('Некорректный запрашеваемый элемент по ключу homeworks')
-
-    if len(homeworks) == 0:
-        return False
+    if not isinstance(homeworks, list):
+        raise exception_type_error('Ожидается под ключем homeworks список!')
 
     return homeworks
 
 
-def check_status(last_review):
-    """ Если в из API пришел статус. """
-    status = last_review.get('status')
-    if not status:
-        raise exception_error('Недокументированный статус домашней работы')
-        
-    return status
-
-
 def parse_status(homework):
-    # Проверить homework_name и HOMEWORK_STATUSES
-    status = check_status(homework)
+    """ Из полученной работы получить статус, из статуса сформировать и вернуть строку """
+    status = homework.get('status')
+
+    if not status:
+        raise exception_error('Недокументированный статус домашней работы!')
+
+    if 'homework_name' not in homework:
+        raise exception_key_error('Некорректный запрашеваемый элемент по ключу homework_name!')
 
     homework_name = homework.get('homework_name')
+
+    if status not in HOMEWORK_STATUSES:
+        raise exception_key_error('Статусы работ не определены!')
+
     verdict = HOMEWORK_STATUSES.get(status)
 
     return f'Изменился статус проверки работы "{homework_name}". {verdict}'
 
 
 def check_tokens():
-    if not PRACTICUM_TOKEN and TELEGRAM_TOKEN and TELEGRAM_CHAT_ID:
-        raise exception_critical('Отсуствует токен!')
+    """ Проверить существуют ли переменные окружения. """
+
+    environments_variables = {
+        'PRACTICUM_TOKEN': PRACTICUM_TOKEN,
+        'TELEGRAM_TOKEN': TELEGRAM_TOKEN,
+        'TELEGRAM_CHAT_ID': TELEGRAM_CHAT_ID
+    }
+
+    for key, var in environments_variables.items():
+        if not var:
+            exception_critical(f"Отсутствует обязательная переменная окружения: '{key}'")
+            return False
+
+    return True
 
 
 def get_last_review(all_review):
+    """ Получить последнюю проверенную работу. """
     last_review = all_review[len(all_review) - 1]
     return last_review
 
 
 def main():
-    """ В первый раз присылает статус моей работы, если статус изменился, присылает новое сообщение, если нет, ничего не присылает """
-    # int(time.time())
-    # 1634074965
-    current_timestamp = 1634074965
-    bot = Bot(token=TELEGRAM_TOKEN)
+    """ Получить из API статус домашней работы, и отправить его в телеграмм бот. """
+    current_timestamp = int(time.time())
+
+    count = 0
 
     while True:
         try:
-            check_tokens()
+            if not check_tokens():
+                return
 
             response = get_api_answer(current_timestamp)
 
-            print(response)
-
             homeworks = check_response(response)
+
             if homeworks:
                 last_review = get_last_review(homeworks)
 
                 message = parse_status(last_review)
-                send_message(bot, message)
-                logging.debug('Отсутствие в ответе новых статусов')
+                send_message(BOT, message)
+                logging.debug('Отсутствие в ответе новых статусов!')
 
             current_timestamp = response.get('current_date', current_timestamp)
 
-            time.sleep(10)
+            time.sleep(RETRY_TIME)
 
         except Exception as error:
             message = f'Сбой в работе программы: {error}'
-            ...
+            exception_warning(message)
+
+            if count == 0:
+                count = 1
+                send_message(BOT, message)
+
             time.sleep(RETRY_TIME)
 
 if __name__ == '__main__':
