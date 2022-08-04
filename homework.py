@@ -159,7 +159,8 @@ def check_tokens():
 
     if not TELEGRAM_CHAT_ID:
         exception_critical(
-            f"Отсутствует обязательная переменная окружения: 'TELEGRAM_CHAT_ID'"
+            f"Отсутствует обязательная переменная окружения:"
+            f"'TELEGRAM_CHAT_ID'"
         )
         return False
 
