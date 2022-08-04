@@ -145,26 +145,28 @@ def parse_status(homework):
 
 def check_tokens():
     """Проверить существуют ли переменные окружения."""
-    environments_variables = {
-        'PRACTICUM_TOKEN': PRACTICUM_TOKEN,
-        'TELEGRAM_TOKEN': TELEGRAM_TOKEN,
-        'TELEGRAM_CHAT_ID': TELEGRAM_CHAT_ID
-    }
+    if not PRACTICUM_TOKEN:
+        exception_critical(
+            f"Отсутствует обязательная переменная окружения:"
+            f"{'PRACTICUM_TOKEN'}"
+        )
+        return False
 
-    for key, var in environments_variables.items():
-        if not var:
-            exception_critical(
-                f"Отсутствует обязательная переменная окружения: '{key}'"
-            )
-            return False
+    if not TELEGRAM_TOKEN:
+        exception_critical(
+            f"Отсутствует обязательная переменная окружения:"
+            f"{'TELEGRAM_TOKEN'}"
+        )
+        return False
+
+    if not TELEGRAM_CHAT_ID:
+        exception_critical(
+            f"Отсутствует обязательная переменная окружения:"
+            f"{'TELEGRAM_CHAT_ID'}"
+        )
+        return False
 
     return True
-
-
-def get_last_review(all_review):
-    """Получить последнюю проверенную работу."""
-    last_review = all_review[len(all_review) - 1]
-    return last_review
 
 
 def main():
@@ -174,7 +176,7 @@ def main():
     """
     current_timestamp = int(time.time())
 
-    count = 0
+    previous_message = ''
 
     while True:
         try:
@@ -186,9 +188,7 @@ def main():
             homeworks = check_response(response)
 
             if homeworks:
-                last_review = get_last_review(homeworks)
-
-                message = parse_status(last_review)
+                message = parse_status(homeworks[0])
                 send_message(BOT, message)
                 logging.debug('Отсутствие в ответе новых статусов!')
 
@@ -200,8 +200,8 @@ def main():
             message = f'Сбой в работе программы: {error}'
             exception_warning(message)
 
-            if count == 0:
-                count = 1
+            if not message == previous_message:
+                previous_message = message
                 send_message(BOT, message)
 
             time.sleep(RETRY_TIME)
