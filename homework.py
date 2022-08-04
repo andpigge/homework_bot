@@ -174,7 +174,7 @@ def main():
     """
     current_timestamp = int(time.time())
 
-    count = 0
+    count = 1
 
     while True:
         try:
@@ -200,8 +200,8 @@ def main():
             message = f'Сбой в работе программы: {error}'
             exception_warning(message)
 
-            if count == 0:
-                count = 1
+            if count == 1:
+                count = 2
                 send_message(BOT, message)
 
             time.sleep(RETRY_TIME)
