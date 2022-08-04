@@ -145,20 +145,31 @@ def parse_status(homework):
 
 def check_tokens():
     """Проверить существуют ли переменные окружения."""
-    environments_variables = {
-        'PRACTICUM_TOKEN': PRACTICUM_TOKEN,
-        'TELEGRAM_TOKEN': TELEGRAM_TOKEN,
-        'TELEGRAM_CHAT_ID': TELEGRAM_CHAT_ID
-    }
+    if not PRACTICUM_TOKEN:
+        exception_critical(
+            f"Отсутствует обязательная переменная окружения: 'PRACTICUM_TOKEN'"
+        )
+        return False
 
-    for key, var in environments_variables.items():
-        if not var:
-            exception_critical(
-                f"Отсутствует обязательная переменная окружения: '{key}'"
-            )
-            return False
+    if not TELEGRAM_TOKEN:
+        exception_critical(
+            f"Отсутствует обязательная переменная окружения: 'TELEGRAM_TOKEN'"
+        )
+        return False
+
+    if not TELEGRAM_CHAT_ID:
+        exception_critical(
+            f"Отсутствует обязательная переменная окружения: 'TELEGRAM_CHAT_ID'"
+        )
+        return False
 
     return True
+
+
+def get_last_review(all_review):
+    """Получить последнюю проверенную работу."""
+    last_review = all_review[len(all_review) - 1]
+    return last_review
 
 
 def main():
@@ -180,7 +191,9 @@ def main():
             homeworks = check_response(response)
 
             if homeworks:
-                message = parse_status(homeworks[0])
+                last_review = get_last_review(homeworks)
+
+                message = parse_status(last_review)
                 send_message(BOT, message)
                 logging.debug('Отсутствие в ответе новых статусов!')
 
