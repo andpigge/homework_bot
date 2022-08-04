@@ -6,7 +6,13 @@ import requests
 
 from telegram import Bot
 
-from exceptions import exception_error, exception_critical, exception_warning, exception_key_error, exception_type_error
+from exceptions import (
+    exception_error,
+    exception_critical,
+    exception_warning,
+    exception_key_error,
+    exception_type_error
+)
 
 
 load_dotenv()
@@ -30,28 +36,36 @@ logging.basicConfig(
     level=logging.DEBUG,
     filename='homework.log',
     filemode='w',
-    format='%(asctime)s, %(levelname)s, %(message)s, %(name)s',
+    format=(
+        '%(asctime)s, %(levelname)s, %(message)s, %(name)s'
+    ),
     encoding='utf=8'
 )
 
 
 def send_message(bot, message):
-    """ Отправка в телеграмм бот сообщения. """
+    """Отправка в телеграмм бот сообщения."""
     try:
         bot.send_message(TELEGRAM_CHAT_ID, message)
 
         name_bot = bot['username']
 
-        logging.info(f'Сообщение успешно отправленно на телеграмм бот: {name_bot}!')
+        logging.info(
+            f'Сообщение успешно отправленно на телеграмм бот: {name_bot}!'
+        )
     except Exception as error:
         if error == 'Unauthorized':
-            logging.critical(f'{error}. Некорректный токен или токен отсуствует!')
+            logging.critical(
+                f'{error}. Некорректный токен или токен отсуствует!'
+            )
         else:
-            logging.error(f'{error}. Не удалось отправить сообщение в телеграмм бот!')
+            logging.error(
+                f'{error}. Не удалось отправить сообщение в телеграмм бот!'
+            )
 
 
 def check_get_api(endpoint, headers, params):
-    """ Проверка на положительный и отрицательные запросы к API. """
+    """Проверка на положительный и отрицательные запросы к API."""
     response = requests.get(endpoint, headers=headers, params=params)
 
     if response.status_code < 400:
@@ -62,27 +76,39 @@ def check_get_api(endpoint, headers, params):
         message = response.json()['message']
         code = response.json()['code']
     except Exception:
-        exception_error(f'{response.status_code}. Запрос на адрес {endpoint} завершился с ошибкой!')
+        exception_error(
+            f'{response.status_code}.'
+            f'Запрос на адрес {endpoint} завершился с ошибкой!'
+        )
     else:
         exception_critical(logging.critical(f'{code}: {message}.'))
 
 
 def get_api_answer(current_timestamp):
-    """ Проверка что запрос прошел успешно. """
+    """Проверка что запрос прошел успешно."""
     timestamp = current_timestamp or int(time.time())
     params = {'from_date': timestamp}
 
-    response = check_get_api(ENDPOINT, headers=HEADERS, params=params)
+    response = check_get_api(
+        ENDPOINT,
+        headers=HEADERS,
+        params=params
+    )
     return response.json()
 
 
 def check_response(response):
-    """ Проверка что запрос соотвествует ожидаемому и у него есть ключ homeworks. """
+    """
+    Проверка что запрос соотвествует ожидаемому.
+    и у него есть ключ homeworks.
+    """
     if not isinstance(response, dict):
         raise exception_type_error('Ожидается в присланном ответе коллекцию!')
 
     if 'homeworks' not in response:
-        raise exception_key_error('Некорректный запрашеваемый элемент по ключу homeworks!')
+        raise exception_key_error(
+            'Некорректный запрашеваемый элемент по ключу homeworks!'
+        )
 
     homeworks = response.get('homeworks')
 
@@ -93,14 +119,19 @@ def check_response(response):
 
 
 def parse_status(homework):
-    """ Из полученной работы получить статус, из статуса сформировать и вернуть строку """
+    """
+    Из полученной работы получить статус,.
+    из статуса сформировать и вернуть строку.
+    """
     status = homework.get('status')
 
     if not status:
         raise exception_error('Недокументированный статус домашней работы!')
 
     if 'homework_name' not in homework:
-        raise exception_key_error('Некорректный запрашеваемый элемент по ключу homework_name!')
+        raise exception_key_error(
+            'Некорректный запрашеваемый элемент по ключу homework_name!'
+        )
 
     homework_name = homework.get('homework_name')
 
@@ -113,8 +144,7 @@ def parse_status(homework):
 
 
 def check_tokens():
-    """ Проверить существуют ли переменные окружения. """
-
+    """Проверить существуют ли переменные окружения."""
     environments_variables = {
         'PRACTICUM_TOKEN': PRACTICUM_TOKEN,
         'TELEGRAM_TOKEN': TELEGRAM_TOKEN,
@@ -123,20 +153,25 @@ def check_tokens():
 
     for key, var in environments_variables.items():
         if not var:
-            exception_critical(f"Отсутствует обязательная переменная окружения: '{key}'")
+            exception_critical(
+                f"Отсутствует обязательная переменная окружения: '{key}'"
+            )
             return False
 
     return True
 
 
 def get_last_review(all_review):
-    """ Получить последнюю проверенную работу. """
+    """Получить последнюю проверенную работу."""
     last_review = all_review[len(all_review) - 1]
     return last_review
 
 
 def main():
-    """ Получить из API статус домашней работы, и отправить его в телеграмм бот. """
+    """
+    Получить из API статус домашней работы,.
+    и отправить его в телеграмм бот.
+    """
     current_timestamp = int(time.time())
 
     count = 0
@@ -170,6 +205,7 @@ def main():
                 send_message(BOT, message)
 
             time.sleep(RETRY_TIME)
+
 
 if __name__ == '__main__':
     main()
