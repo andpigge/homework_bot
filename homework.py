@@ -48,10 +48,8 @@ def send_message(bot, message):
     try:
         bot.send_message(TELEGRAM_CHAT_ID, message)
 
-        name_bot = bot['username']
-
         logging.info(
-            f'Сообщение успешно отправленно на телеграмм бот: {name_bot}!'
+            f'Сообщение успешно отправленно на телеграмм бот!'
         )
     except Exception as error:
         if error == 'Unauthorized':
@@ -123,6 +121,9 @@ def parse_status(homework):
     Из полученной работы получить статус,.
     из статуса сформировать и вернуть строку.
     """
+    if 'status' not in homework:
+        raise exception_error('Недокументированный статус домашней работы!')
+
     status = homework.get('status')
 
     if not status:
