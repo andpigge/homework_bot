@@ -147,8 +147,7 @@ def check_tokens():
     """Проверить существуют ли переменные окружения."""
     tokens = all([PRACTICUM_TOKEN, TELEGRAM_TOKEN, TELEGRAM_CHAT_ID])
     return tokens or exception_critical(
-        f"Отсутствует обязательная"
-        f"переменная окружения."
+        "Отсутствует обязательная переменная окружения."
     )
 
 
