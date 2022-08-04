@@ -48,8 +48,10 @@ def send_message(bot, message):
     try:
         bot.send_message(TELEGRAM_CHAT_ID, message)
 
+        name_bot = bot['username']
+
         logging.info(
-            'Сообщение успешно отправленно на телеграмм бот!'
+            f'Сообщение успешно отправленно на телеграмм бот: {name_bot}!'
         )
     except Exception as error:
         if error == 'Unauthorized':
@@ -121,9 +123,6 @@ def parse_status(homework):
     Из полученной работы получить статус,.
     из статуса сформировать и вернуть строку.
     """
-    if 'status' not in homework:
-        raise exception_error('Недокументированный статус домашней работы!')
-
     status = homework.get('status')
 
     if not status:
@@ -170,12 +169,6 @@ def check_tokens():
     return True
 
 
-def get_last_review(all_review):
-    """Получить последнюю проверенную работу."""
-    last_review = all_review[len(all_review) - 1]
-    return last_review
-
-
 def main():
     """
     Получить из API статус домашней работы,.
@@ -195,9 +188,7 @@ def main():
             homeworks = check_response(response)
 
             if homeworks:
-                last_review = get_last_review(homeworks)
-
-                message = parse_status(last_review)
+                message = parse_status(homeworks[0])
                 send_message(BOT, message)
                 logging.debug('Отсутствие в ответе новых статусов!')
 
