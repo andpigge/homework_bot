@@ -145,26 +145,18 @@ def parse_status(homework):
 
 def check_tokens():
     """Проверить существуют ли переменные окружения."""
-    if not PRACTICUM_TOKEN:
-        exception_critical(
-            f"Отсутствует обязательная переменная окружения:"
-            f"{'PRACTICUM_TOKEN'}"
-        )
-        return False
+    environments_variables = {
+        'PRACTICUM_TOKEN': PRACTICUM_TOKEN,
+        'TELEGRAM_TOKEN': TELEGRAM_TOKEN,
+        'TELEGRAM_CHAT_ID': TELEGRAM_CHAT_ID
+    }
 
-    if not TELEGRAM_TOKEN:
-        exception_critical(
-            f"Отсутствует обязательная переменная окружения:"
-            f"{'TELEGRAM_TOKEN'}"
-        )
-        return False
-
-    if not TELEGRAM_CHAT_ID:
-        exception_critical(
-            f"Отсутствует обязательная переменная окружения:"
-            f"{'TELEGRAM_CHAT_ID'}"
-        )
-        return False
+    for key, var in environments_variables.items():
+        if not var:
+            exception_critical(
+                f"Отсутствует обязательная переменная окружения: '{key}'"
+            )
+            return False
 
     return True
 
