@@ -147,20 +147,22 @@ def check_tokens():
     """Проверить существуют ли переменные окружения."""
     if not PRACTICUM_TOKEN:
         exception_critical(
-            f"Отсутствует обязательная переменная окружения: 'PRACTICUM_TOKEN'"
+            f"Отсутствует обязательная переменная окружения:"
+            f"{'PRACTICUM_TOKEN'}"
         )
         return False
 
     if not TELEGRAM_TOKEN:
         exception_critical(
-            f"Отсутствует обязательная переменная окружения: 'TELEGRAM_TOKEN'"
+            f"Отсутствует обязательная переменная окружения:"
+            f"{'TELEGRAM_TOKEN'}"
         )
         return False
 
     if not TELEGRAM_CHAT_ID:
         exception_critical(
             f"Отсутствует обязательная переменная окружения:"
-            f"'TELEGRAM_CHAT_ID'"
+            f"{'TELEGRAM_CHAT_ID'}"
         )
         return False
 
