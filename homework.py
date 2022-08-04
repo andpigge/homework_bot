@@ -180,7 +180,7 @@ def main():
             homeworks = check_response(response)
 
             if homeworks:
-                message = parse_status(last_review[0])
+                message = parse_status(homeworks[0])
                 send_message(BOT, message)
                 logging.debug('Отсутствие в ответе новых статусов!')
 
