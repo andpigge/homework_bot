@@ -161,12 +161,6 @@ def check_tokens():
     return True
 
 
-def get_last_review(all_review):
-    """Получить последнюю проверенную работу."""
-    last_review = all_review[len(all_review) - 1]
-    return last_review
-
-
 def main():
     """
     Получить из API статус домашней работы,.
@@ -174,7 +168,7 @@ def main():
     """
     current_timestamp = int(time.time())
 
-    count = 1
+    count = 0
 
     while True:
         try:
@@ -186,9 +180,7 @@ def main():
             homeworks = check_response(response)
 
             if homeworks:
-                last_review = get_last_review(homeworks)
-
-                message = parse_status(last_review)
+                message = parse_status(last_review[0])
                 send_message(BOT, message)
                 logging.debug('Отсутствие в ответе новых статусов!')
 
@@ -200,8 +192,8 @@ def main():
             message = f'Сбой в работе программы: {error}'
             exception_warning(message)
 
-            if count == 1:
-                count = 2
+            if count == 0:
+                count = 1
                 send_message(BOT, message)
 
             time.sleep(RETRY_TIME)
