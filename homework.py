@@ -48,8 +48,10 @@ def send_message(bot, message):
     try:
         bot.send_message(TELEGRAM_CHAT_ID, message)
 
+        name_bot = bot['username']
+
         logging.info(
-            f'Сообщение успешно отправленно на телеграмм бот!'
+            f'Сообщение успешно отправленно на телеграмм бот: {name_bot}!'
         )
     except Exception as error:
         if error == 'Unauthorized':
@@ -146,18 +148,26 @@ def parse_status(homework):
 
 def check_tokens():
     """Проверить существуют ли переменные окружения."""
-    environments_variables = {
-        'PRACTICUM_TOKEN': PRACTICUM_TOKEN,
-        'TELEGRAM_TOKEN': TELEGRAM_TOKEN,
-        'TELEGRAM_CHAT_ID': TELEGRAM_CHAT_ID
-    }
+    if not PRACTICUM_TOKEN:
+        exception_critical(
+            f"Отсутствует обязательная переменная окружения:"
+            f"{'PRACTICUM_TOKEN'}"
+        )
+        return False
 
-    for key, var in environments_variables.items():
-        if not var:
-            exception_critical(
-                f"Отсутствует обязательная переменная окружения: '{key}'"
-            )
-            return False
+    if not TELEGRAM_TOKEN:
+        exception_critical(
+            f"Отсутствует обязательная переменная окружения:"
+            f"{'TELEGRAM_TOKEN'}"
+        )
+        return False
+
+    if not TELEGRAM_CHAT_ID:
+        exception_critical(
+            f"Отсутствует обязательная переменная окружения:"
+            f"{'TELEGRAM_CHAT_ID'}"
+        )
+        return False
 
     return True
 
