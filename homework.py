@@ -145,10 +145,26 @@ def parse_status(homework):
 
 def check_tokens():
     """Проверить существуют ли переменные окружения."""
-    tokens = all([PRACTICUM_TOKEN, TELEGRAM_TOKEN, TELEGRAM_CHAT_ID])
-    return tokens or exception_critical(
-        "Отсутствует обязательная переменная окружения."
-    )
+    environments_variables = {
+        'PRACTICUM_TOKEN': PRACTICUM_TOKEN,
+        'TELEGRAM_TOKEN': TELEGRAM_TOKEN,
+        'TELEGRAM_CHAT_ID': TELEGRAM_CHAT_ID
+    }
+
+    for key, var in environments_variables.items():
+        if not var:
+            exception_critical(
+                f"Отсутствует обязательная переменная окружения: '{key}'"
+            )
+            return False
+
+    return True
+
+
+def get_last_review(all_review):
+    """Получить последнюю проверенную работу."""
+    last_review = all_review[len(all_review) - 1]
+    return last_review
 
 
 def main():
@@ -158,7 +174,7 @@ def main():
     """
     current_timestamp = int(time.time())
 
-    previous_message = ''
+    count = 0
 
     while True:
         try:
@@ -170,7 +186,9 @@ def main():
             homeworks = check_response(response)
 
             if homeworks:
-                message = parse_status(homeworks[0])
+                last_review = get_last_review(homeworks)
+
+                message = parse_status(last_review)
                 send_message(BOT, message)
                 logging.debug('Отсутствие в ответе новых статусов!')
 
@@ -182,8 +200,8 @@ def main():
             message = f'Сбой в работе программы: {error}'
             exception_warning(message)
 
-            if not message == previous_message:
-                previous_message = message
+            if count == 0:
+                count = 1
                 send_message(BOT, message)
 
             time.sleep(RETRY_TIME)
