@@ -48,10 +48,8 @@ def send_message(bot, message):
     try:
         bot.send_message(TELEGRAM_CHAT_ID, message)
 
-        name_bot = bot['username']
-
         logging.info(
-            f'Сообщение успешно отправленно на телеграмм бот: {name_bot}!'
+            'Сообщение успешно отправленно на телеграмм бот!'
         )
     except Exception as error:
         if error == 'Unauthorized':
