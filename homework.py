@@ -76,12 +76,12 @@ def check_get_api(endpoint, headers, params):
         message = response.json()['message']
         code = response.json()['code']
     except Exception:
-        exception_error(
+        raise exception_error(
             f'{response.status_code}.'
             f'Запрос на адрес {endpoint} завершился с ошибкой!'
         )
     else:
-        exception_critical(logging.critical(f'{code}: {message}.'))
+        raise exception_critical(logging.critical(f'{code}: {message}.'))
 
 
 def get_api_answer(current_timestamp):
