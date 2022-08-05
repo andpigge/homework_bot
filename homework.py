@@ -68,14 +68,20 @@ def check_get_api(endpoint, headers, params):
     """Проверка на положительный и отрицательные запросы к API."""
     response = requests.get(endpoint, headers=headers, params=params)
 
-    if response.status_code >= 400:
+    if response.status_code < 400:
+        logging.info(f'Запрос на адрес {endpoint} прошел успешно!')
+        return response
+
+    try:
+        message = response.json()['message']
+        code = response.json()['code']
+    except Exception:
         raise exception_error(
             f'{response.status_code}.'
             f'Запрос на адрес {endpoint} завершился с ошибкой!'
         )
-
-    logging.info(f'Запрос на адрес {endpoint} прошел успешно!')
-    return response
+    else:
+        raise exception_critical(logging.critical(f'{code}: {message}.'))
 
 
 def get_api_answer(current_timestamp):
@@ -139,27 +145,18 @@ def parse_status(homework):
 
 def check_tokens():
     """Проверить существуют ли переменные окружения."""
-    if not PRACTICUM_TOKEN:
-        exception_critical(
-            f"Отсутствует обязательная переменная окружения:"
-            f"{'PRACTICUM_TOKEN'}"
-        )
-        return False
+    environments_variables = {
+        'PRACTICUM_TOKEN': PRACTICUM_TOKEN,
+        'TELEGRAM_TOKEN': TELEGRAM_TOKEN,
+        'TELEGRAM_CHAT_ID': TELEGRAM_CHAT_ID
+    }
 
-    if not TELEGRAM_TOKEN:
-        exception_critical(
-            f"Отсутствует обязательная переменная окружения:"
-            f"{'TELEGRAM_TOKEN'}"
-        )
-        return False
-
-    if not TELEGRAM_CHAT_ID:
-        exception_critical(
-            f"Отсутствует обязательная переменная окружения:"
-            f"{'TELEGRAM_CHAT_ID'}"
-        )
-        return False
-
+    for key, var in environments_variables.items():
+        if not var:
+            exception_critical(
+                f"Отсутствует обязательная переменная окружения: '{key}'"
+            )
+            return False
     return True
 
 
@@ -182,9 +179,11 @@ def main():
             homeworks = check_response(response)
 
             if homeworks:
-                message = parse_status(homeworks[0])
-                send_message(BOT, message)
-                logging.debug('Отсутствие в ответе новых статусов!')
+                for homework in homeworks:
+                    message = parse_status(homework)
+                    send_message(BOT, message)
+
+            logging.debug('Отсутствие в ответе новых статусов!')
 
             current_timestamp = response.get('current_date', current_timestamp)
 
