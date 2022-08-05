@@ -68,20 +68,15 @@ def check_get_api(endpoint, headers, params):
     """Проверка на положительный и отрицательные запросы к API."""
     response = requests.get(endpoint, headers=headers, params=params)
 
-    if response.status_code < 400:
-        logging.info(f'Запрос на адрес {endpoint} прошел успешно!')
-        return response
-
     try:
-        message = response.json()['message']
-        code = response.json()['code']
+        if response.status_code < 400:
+            logging.info(f'Запрос на адрес {endpoint} прошел успешно!')
+            return response
     except Exception:
         raise exception_error(
             f'{response.status_code}.'
             f'Запрос на адрес {endpoint} завершился с ошибкой!'
         )
-    else:
-        raise exception_critical(logging.critical(f'{code}: {message}.'))
 
 
 def get_api_answer(current_timestamp):
