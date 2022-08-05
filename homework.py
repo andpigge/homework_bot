@@ -24,7 +24,7 @@ TELEGRAM_CHAT_ID = os.getenv('TELEGRAM_CHAT_ID')
 RETRY_TIME = 600
 ENDPOINT = 'https://practicum.yandex.ru/api/user_api/homework_statuses/'
 HEADERS = {'Authorization': f'OAuth {PRACTICUM_TOKEN}'}
-BOT = Bot(token=TELEGRAM_TOKEN)
+
 
 HOMEWORK_STATUSES = {
     'approved': 'Работа проверена: ревьюеру всё понравилось. Ура!',
@@ -164,6 +164,7 @@ def main():
     Получить из API статус домашней работы,.
     и отправить его в телеграмм бот.
     """
+    bot = Bot(token=TELEGRAM_TOKEN)
     current_timestamp = int(time.time())
 
     count = 0
@@ -180,7 +181,7 @@ def main():
             if homeworks:
                 for homework in homeworks:
                     message = parse_status(homework)
-                    send_message(BOT, message)
+                    send_message(bot, message)
 
             logging.debug('Отсутствие в ответе новых статусов!')
 
@@ -194,7 +195,7 @@ def main():
 
             if count == 0:
                 count = 1
-                send_message(BOT, message)
+                send_message(bot, message)
 
             time.sleep(RETRY_TIME)
 
