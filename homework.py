@@ -72,6 +72,10 @@ def check_get_api(endpoint, headers, params):
         if response.status_code < 400:
             logging.info(f'Запрос на адрес {endpoint} прошел успешно!')
             return response
+        raise exception_error(
+            f'{response.status_code}.'
+            f'Запрос на адрес {endpoint} завершился с ошибкой!'
+        )
     except Exception:
         raise exception_error(
             f'{response.status_code}.'
