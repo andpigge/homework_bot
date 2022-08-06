@@ -32,16 +32,6 @@ HOMEWORK_STATUSES = {
     'rejected': 'Работа проверена: у ревьюера есть замечания.'
 }
 
-logging.basicConfig(
-    level=logging.DEBUG,
-    filename='homework.log',
-    filemode='w',
-    format=(
-        '%(asctime)s, %(levelname)s, %(message)s, %(name)s'
-    ),
-    encoding='utf=8'
-)
-
 
 def send_message(bot, message):
     """Отправка в телеграмм бот сообщения."""
@@ -201,4 +191,14 @@ def main():
 
 
 if __name__ == '__main__':
+    logging.basicConfig(
+        level=logging.DEBUG,
+        filename='homework.log',
+        filemode='w',
+        format=(
+            '%(asctime)s, %(levelname)s, %(message)s, %(funcName)s, %(lineno)d, %(name)s'
+        ),
+        encoding='utf=8'
+    )
+
     main()
