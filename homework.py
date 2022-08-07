@@ -54,12 +54,12 @@ def send_message(bot, message):
 
 def check_get_api(endpoint, headers, params):
     """Проверка на положительный и отрицательные запросы к API."""
-    response = requests.get(endpoint, headers=headers, params=params)
-
     try:
+        response = requests.get(endpoint, headers=headers, params=params)
+
         if response.status_code == HTTPStatus.OK:
             logging.info(f'Запрос на адрес {endpoint} прошел успешно!')
-            return response
+            return response.json()
         raise exception_error(
             f'{response.status_code}.'
             f'Запрос на адрес {endpoint} завершился с ошибкой!'
@@ -78,10 +78,10 @@ def get_api_answer(current_timestamp):
 
     response = check_get_api(
         ENDPOINT,
-        headers=HEADERS,
-        params=params
+        headers=HEADERS, 
+        params=params 
     )
-    return response.json()
+    return response
 
 
 def check_response(response):
@@ -92,9 +92,10 @@ def check_response(response):
     if not isinstance(response, dict):
         raise exception_type_error('Ожидается в присланном ответе коллекцию!')
 
-    if 'homeworks' not in response:
-        raise exception_key_error(
-            'Некорректный запрашеваемый элемент по ключу homeworks!'
+    for key in ('current_date', 'homeworks'):
+        if key not in response:
+            raise exception_key_error(
+                f'Некорректный запрашеваемый элемент по ключу {key}!'
         )
 
     homeworks = response.get('homeworks')
@@ -184,8 +185,7 @@ if __name__ == '__main__':
         filemode='w',
         format=(
             '%(asctime)s, %(levelname)s, %(message)s, %(funcName)s, %(lineno)d, %(name)s'
-        ),
-        encoding='utf=8'
+        )
     )
 
     main()
