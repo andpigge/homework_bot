@@ -169,9 +169,6 @@ def main():
             logging.debug('Отсутствие в ответе новых статусов!')
 
             current_timestamp = response.get('current_date', current_timestamp)
-
-            time.sleep(RETRY_TIME)
-
         except Exception as error:
             message = f'Сбой в работе программы: {error}'
             exception_warning(message)
@@ -179,7 +176,7 @@ def main():
             if count == 0:
                 count = 1
                 send_message(bot, message)
-
+        finally:
             time.sleep(RETRY_TIME)
 
 
