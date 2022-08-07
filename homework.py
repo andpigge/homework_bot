@@ -36,6 +36,7 @@ VERDICTS = {
 def send_message(bot, message):
     """Отправка в телеграмм бот сообщения."""
     try:
+        name_bot = bot['username']
         logging.info(
             f'Отправка сообщения на телеграмм бот: {name_bot}!'
         )
@@ -44,9 +45,10 @@ def send_message(bot, message):
         if error == 'Unauthorized':
             raise exception_error(f'{error}. Некорректный токен!')
         else:
-            raise exception_error(f'{error}. Не удалось отправить сообщение в телеграмм бот!')
+            raise exception_error(
+                f'{error}. Не удалось отправить сообщение в телеграмм бот!'
+            )
     else:
-        name_bot = bot['username']
         logging.info(
             f'Сообщение успешно отправленно на телеграмм бот: {name_bot}!'
         )
@@ -96,7 +98,7 @@ def check_response(response):
         if key not in response:
             raise exception_key_error(
                 f'Некорректный запрашеваемый элемент по ключу {key}!'
-        )
+            )
 
     homeworks = response.get('homeworks')
 
@@ -133,7 +135,8 @@ def parse_status(homework):
 
 def check_tokens():
     """Проверить существуют ли переменные окружения."""
-    if all((PRACTICUM_TOKEN, TELEGRAM_TOKEN, TELEGRAM_CHAT_ID)) == False:
+    check_token = all((PRACTICUM_TOKEN, TELEGRAM_TOKEN, TELEGRAM_CHAT_ID))
+    if check_token is False:
         return False
     return True
 
@@ -184,7 +187,8 @@ if __name__ == '__main__':
         filename='homework.log',
         filemode='w',
         format=(
-            '%(asctime)s, %(levelname)s, %(message)s, %(funcName)s, %(lineno)d, %(name)s'
+            '%(asctime)s, %(levelname)s, %(message)s,\
+            %(funcName)s, %(lineno)d, %(name)s'
         )
     )
 
