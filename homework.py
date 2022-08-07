@@ -1,19 +1,13 @@
-import time
-import os
 import logging
-from dotenv import load_dotenv
-import requests
+import os
+import time
 from http import HTTPStatus
 
+import requests
+from dotenv import load_dotenv
 from telegram import Bot
 
-from exceptions import (
-    exception_error,
-    exception_critical,
-    exception_key_error,
-    exception_type_error
-)
-
+import exceptions as e
 
 load_dotenv()
 
@@ -43,9 +37,9 @@ def send_message(bot, message):
         bot.send_message(TELEGRAM_CHAT_ID, message)
     except Exception as error:
         if error == 'Unauthorized':
-            raise exception_error(f'{error}. Некорректный токен!')
+            raise e.exception_error(f'{error}. Некорректный токен!')
         else:
-            raise exception_error(
+            raise e.exception_error(
                 f'{error}. Не удалось отправить сообщение в телеграмм бот!'
             )
     else:
@@ -62,12 +56,12 @@ def check_get_api(endpoint, params):
         if response.status_code == HTTPStatus.OK:
             logging.info(f'Запрос на адрес {endpoint} прошел успешно!')
             return response.json()
-        raise exception_error(
+        raise e.exception_error(
             f'{response.status_code}.'
             f'Запрос на адрес {endpoint} завершился с ошибкой!'
         )
     except Exception:
-        raise exception_error(
+        raise e.exception_error(
             f'{response.status_code}.'
             f'Запрос на адрес {endpoint} завершился с ошибкой!'
         )
@@ -92,18 +86,20 @@ def check_response(response):
     и у него есть ключ homeworks.
     """
     if not isinstance(response, dict):
-        raise exception_type_error('Ожидается в присланном ответе коллекцию!')
+        raise e.exception_type_error(
+            'Ожидается в присланном ответе коллекцию!'
+        )
 
     for key in ('current_date', 'homeworks'):
         if key not in response:
-            raise exception_key_error(
+            raise e.exception_key_error(
                 f'Некорректный запрашеваемый элемент по ключу {key}!'
             )
 
     homeworks = response.get('homeworks')
 
     if not isinstance(homeworks, list):
-        raise exception_type_error('Ожидается под ключем homeworks список!')
+        raise e.exception_type_error('Ожидается под ключем homeworks список!')
 
     return homeworks
 
@@ -116,17 +112,17 @@ def parse_status(homework):
     status = homework.get('status')
 
     if not status:
-        raise exception_error('Недокументированный статус домашней работы!')
+        raise e.exception_error('Недокументированный статус домашней работы!')
 
     if 'homework_name' not in homework:
-        raise exception_key_error(
+        raise e.exception_key_error(
             'Некорректный запрашеваемый элемент по ключу homework_name!'
         )
 
     homework_name = homework.get('homework_name')
 
     if status not in VERDICTS:
-        raise exception_key_error('Статусы работ не определены!')
+        raise e.exception_key_error('Статусы работ не определены!')
 
     verdict = VERDICTS.get(status)
 
@@ -147,7 +143,7 @@ def main():
     и отправить его в телеграмм бот.
     """
     if not check_tokens():
-        raise exception_critical(
+        raise e.exception_critical(
             "Отсутствует обязательная переменная окружения!"
         )
 
