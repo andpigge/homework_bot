@@ -134,18 +134,8 @@ def parse_status(homework):
 
 def check_tokens():
     """Проверить существуют ли переменные окружения."""
-    environments_variables = {
-        'PRACTICUM_TOKEN': PRACTICUM_TOKEN,
-        'TELEGRAM_TOKEN': TELEGRAM_TOKEN,
-        'TELEGRAM_CHAT_ID': TELEGRAM_CHAT_ID
-    }
-
-    for key, var in environments_variables.items():
-        if not var:
-            exception_critical(
-                f"Отсутствует обязательная переменная окружения: '{key}'"
-            )
-            return False
+    if all((PRACTICUM_TOKEN, TELEGRAM_TOKEN, TELEGRAM_CHAT_ID)) == False:
+        return False
     return True
 
 
@@ -154,6 +144,12 @@ def main():
     Получить из API статус домашней работы,.
     и отправить его в телеграмм бот.
     """
+    if not check_tokens():
+        exception_critical(
+            "Отсутствует обязательная переменная окружения!"
+        )
+        return
+
     bot = Bot(token=TELEGRAM_TOKEN)
     current_timestamp = int(time.time())
 
@@ -161,9 +157,6 @@ def main():
 
     while True:
         try:
-            if not check_tokens():
-                return
-
             response = get_api_answer(current_timestamp)
 
             homeworks = check_response(response)
