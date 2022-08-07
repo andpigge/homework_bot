@@ -3,6 +3,7 @@ import os
 import logging
 from dotenv import load_dotenv
 import requests
+from http import HTTPStatus
 
 from telegram import Bot
 
@@ -59,7 +60,7 @@ def check_get_api(endpoint, headers, params):
     response = requests.get(endpoint, headers=headers, params=params)
 
     try:
-        if response.status_code < 400:
+        if response.status_code == HTTPStatus.OK:
             logging.info(f'Запрос на адрес {endpoint} прошел успешно!')
             return response
         raise exception_error(
