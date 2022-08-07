@@ -1,5 +1,6 @@
 import logging
 import os
+import sys
 import time
 from http import HTTPStatus
 
@@ -140,9 +141,8 @@ def main():
     и отправить его в телеграмм бот.
     """
     if not check_tokens():
-        raise e.exception_critical(
-            "Отсутствует обязательная переменная окружения!"
-        )
+        logging.critical("Отсутствует обязательная переменная окружения!")
+        sys.exit()
 
     bot = Bot(token=TELEGRAM_TOKEN)
     current_timestamp = int(time.time())
