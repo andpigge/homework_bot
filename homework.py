@@ -91,11 +91,10 @@ def check_response(response):
             'Ожидается в присланном ответе коллекцию!'
         )
 
-    for key in ('current_date', 'homeworks'):
-        if key not in response:
-            raise e.exception_key_error(
-                f'Некорректный запрашеваемый элемент по ключу {key}!'
-            )
+    if ('current_date' and 'homeworks') not in response:
+        raise e.exception_key_error(
+            'Некорректный запрашеваемый элемент по ключу!'
+        )
 
     homeworks = response.get('homeworks')
 
