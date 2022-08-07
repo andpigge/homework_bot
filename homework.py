@@ -36,22 +36,20 @@ HOMEWORK_STATUSES = {
 def send_message(bot, message):
     """Отправка в телеграмм бот сообщения."""
     try:
+        logging.info(
+            f'Отправка сообщения на телеграмм бот: {name_bot}!'
+        )
         bot.send_message(TELEGRAM_CHAT_ID, message)
-
+    except Exception as error:
+        if error == 'Unauthorized':
+            raise exception_error(f'{error}. Некорректный токен!')
+        else:
+            raise exception_error(f'{error}. Не удалось отправить сообщение в телеграмм бот!')
+    else:
         name_bot = bot['username']
-
         logging.info(
             f'Сообщение успешно отправленно на телеграмм бот: {name_bot}!'
         )
-    except Exception as error:
-        if error == 'Unauthorized':
-            logging.critical(
-                f'{error}. Некорректный токен или токен отсуствует!'
-            )
-        else:
-            logging.error(
-                f'{error}. Не удалось отправить сообщение в телеграмм бот!'
-            )
 
 
 def check_get_api(endpoint, headers, params):
