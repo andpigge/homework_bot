@@ -10,7 +10,6 @@ from telegram import Bot
 from exceptions import (
     exception_error,
     exception_critical,
-    exception_warning,
     exception_key_error,
     exception_type_error
 )
@@ -146,10 +145,9 @@ def main():
     и отправить его в телеграмм бот.
     """
     if not check_tokens():
-        exception_critical(
+        raise exception_critical(
             "Отсутствует обязательная переменная окружения!"
         )
-        return
 
     bot = Bot(token=TELEGRAM_TOKEN)
     current_timestamp = int(time.time())
@@ -172,7 +170,7 @@ def main():
             current_timestamp = response.get('current_date', current_timestamp)
         except Exception as error:
             message = f'Сбой в работе программы: {error}'
-            exception_warning(message)
+            logging.exception(message)
 
             if count == 0:
                 count = 1
