@@ -26,7 +26,7 @@ ENDPOINT = 'https://practicum.yandex.ru/api/user_api/homework_statuses/'
 HEADERS = {'Authorization': f'OAuth {PRACTICUM_TOKEN}'}
 
 
-HOMEWORK_STATUSES = {
+VERDICTS = {
     'approved': 'Работа проверена: ревьюеру всё понравилось. Ура!',
     'reviewing': 'Работа взята на проверку ревьюером.',
     'rejected': 'Работа проверена: у ревьюера есть замечания.'
@@ -123,10 +123,10 @@ def parse_status(homework):
 
     homework_name = homework.get('homework_name')
 
-    if status not in HOMEWORK_STATUSES:
+    if status not in VERDICTS:
         raise exception_key_error('Статусы работ не определены!')
 
-    verdict = HOMEWORK_STATUSES.get(status)
+    verdict = VERDICTS.get(status)
 
     return f'Изменился статус проверки работы "{homework_name}". {verdict}'
 
@@ -151,7 +151,7 @@ def main():
     bot = Bot(token=TELEGRAM_TOKEN)
     current_timestamp = int(time.time())
 
-    count = 0
+    previous_message = ''
 
     while True:
         try:
@@ -171,8 +171,8 @@ def main():
             message = f'Сбой в работе программы: {error}'
             logging.exception(message)
 
-            if count == 0:
-                count = 1
+            if not previous_message == message:
+                previous_message = message
                 send_message(bot, message)
         finally:
             time.sleep(RETRY_TIME)
