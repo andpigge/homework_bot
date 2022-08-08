@@ -1,32 +1,15 @@
 import logging
-import os
 import sys
 import time
 from http import HTTPStatus
 
 import requests
-from dotenv import load_dotenv
 from telegram import Bot
 
+from constants import (ENDPOINT, HEADERS, PRACTICUM_TOKEN, RETRY_TIME,
+                       TELEGRAM_CHAT_ID, TELEGRAM_TOKEN, VERDICTS)
 from exceptions import (exception_error, exception_key_error,
                         exception_type_error)
-
-load_dotenv()
-
-PRACTICUM_TOKEN = os.getenv('PRACTICUM_TOKEN')
-TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN')
-TELEGRAM_CHAT_ID = os.getenv('TELEGRAM_CHAT_ID')
-
-RETRY_TIME = 600
-ENDPOINT = 'https://practicum.yandex.ru/api/user_api/homework_statuses/'
-HEADERS = {'Authorization': f'OAuth {PRACTICUM_TOKEN}'}
-
-
-VERDICTS = {
-    'approved': 'Работа проверена: ревьюеру всё понравилось. Ура!',
-    'reviewing': 'Работа взята на проверку ревьюером.',
-    'rejected': 'Работа проверена: у ревьюера есть замечания.'
-}
 
 
 def send_message(bot, message):
