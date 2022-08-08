@@ -156,8 +156,8 @@ def main():
                 return
 
             for homework in homeworks:
-                message = parse_status(homework)
                 send_message(bot, message)
+                message = parse_status(homework)
 
             current_timestamp = response.get('current_date', current_timestamp)
         except Exception as error:
@@ -165,8 +165,8 @@ def main():
             logging.exception(message)
 
             if not previous_message == message:
-                previous_message = message
                 send_message(bot, message)
+                previous_message = message
         finally:
             time.sleep(RETRY_TIME)
 
