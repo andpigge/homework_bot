@@ -156,8 +156,8 @@ def main():
                 return
 
             for homework in homeworks:
-                send_message(bot, message)
                 message = parse_status(homework)
+                send_message(bot, message)
 
             current_timestamp = response.get('current_date', current_timestamp)
         except Exception as error:
