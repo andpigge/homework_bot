@@ -151,12 +151,13 @@ def main():
 
             homeworks = check_response(response)
 
-            if homeworks:
-                for homework in homeworks:
-                    message = parse_status(homework)
-                    send_message(bot, message)
+            if not homeworks:
+                logging.debug('Отсутствие в ответе новых статусов!')
+                return
 
-            logging.debug('Отсутствие в ответе новых статусов!')
+            for homework in homeworks:
+                message = parse_status(homework)
+                send_message(bot, message)
 
             current_timestamp = response.get('current_date', current_timestamp)
         except Exception as error:
